@@ -26,6 +26,14 @@ const customers = [];
 app.post("/account", (request, response) => {
   const { cpf, name } = request.body;
 
+  const customerAlredyExixts = customers.some(
+    (customer) => customer.cpf === cpf
+  );
+
+  if (customerAlredyExixts) {
+    return response.status(400).json({ error: "Customer alredy exists !" });
+  }
+
   customers.push({
     cpf,
     name,
