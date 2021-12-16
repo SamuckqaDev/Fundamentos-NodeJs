@@ -60,8 +60,27 @@ app.post("/account", (request, response) => {
 //get customer datas account;
 app.get("/statement", verifyIfExistsAccountCPF, (request, response) => {
   const { customer } = request;
-
   return response.json(customer.statement);
+});
+
+//Route to deposit
+app.post("/deposit", verifyIfExistsAccountCPF, (request, response) => {
+  const { description, amount } = request.body;
+
+
+  const { customer } = request;
+
+  //Object statementOperation;
+  const statementOperation = {
+    description,
+    amount,
+    createAt: new Date(),
+    type: "credit",
+  };
+
+  customer.statement.push(statementOperation);
+  
+  return response.status(201).send()
 });
 
 //List port to access datas;
