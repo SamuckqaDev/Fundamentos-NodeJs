@@ -28,6 +28,22 @@ function verifyIfExistsAccountCPF(request, response, next) {
   return next();
 }
 
+//get balance sum or subtraction;
+function getBalance(statement) {
+  let initialValue = 0;
+
+  //traverse array and returno sum values;
+  const balance = statement.reduce((acc, operation) => {
+    if (operation.type === "credit") {
+      return acc + operation.amount;
+    } else {
+      return acc - operation.amount;
+    }
+  }, initialValue);
+
+  return balance;
+}
+
 /*
 account data
 *CPF: string;
@@ -67,7 +83,6 @@ app.get("/statement", verifyIfExistsAccountCPF, (request, response) => {
 app.post("/deposit", verifyIfExistsAccountCPF, (request, response) => {
   const { description, amount } = request.body;
 
-
   const { customer } = request;
 
   //Object statementOperation;
@@ -79,8 +94,32 @@ app.post("/deposit", verifyIfExistsAccountCPF, (request, response) => {
   };
 
   customer.statement.push(statementOperation);
-  
-  return response.status(201).send()
+
+  return response.status(201).send();
+});
+
+//Route withdrawal;
+app.post("/withdraw", verifyIfExistsAccountCPF, (request, response) => {
+  const { amount } = request.body;
+  const { customer } = request;
+
+  const balance = getBalance(customer.statement);
+
+  //verify if balance < amount;
+  if (balance < amount) {
+    return response.status(400).json({ error: "Insufficient Founds !" });
+  }
+
+  //Object with type operation;
+  const statementOperation = {
+    amount,
+    createAt: new Date(),
+    type: "debit",
+  };
+
+  customer.statement.push(statementOperation);
+
+  return response.status(201).send();
 });
 
 //List port to access datas;
